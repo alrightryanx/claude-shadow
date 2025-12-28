@@ -1,0 +1,15 @@
+{
+  "name": "shadowai-plugins",
+  "owner": {
+    "name": "ShadowAI",
+    "email": "contact@ryancartwright.com"
+  },
+  "plugins": [
+    {
+      "name": "claude-shadow",
+      "source": ".",
+      "description": "Get push notifications on your phone when Claude Code needs input. Approve, deny, or reply from ShadowAI.",
+      "version": "1.0.0"
+    }
+  ]
+}
