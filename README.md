@@ -70,5 +70,5 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Support
 
-- [ShadowAI Website](https://RyanCartwright.com/ShadowAI)
+- [ShadowAI Website](https://ryancartwright.com/shadowai)
 - [GitHub Issues](https://github.com/alrightryanx/claude-shadow/issues)
