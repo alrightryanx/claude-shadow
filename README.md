@@ -12,7 +12,7 @@ Get push notifications on your phone when Claude Code needs your input. Approve,
 ## Requirements
 
 - [ShadowAI](https://play.google.com/store/apps/details?id=com.shadowai.release) installed on your Android device
-- [ShadowBridge](https://github.com/shadowai-app/shadowbridge) running on your PC
+- [ShadowBridge](https://github.com/alrightryanx/shadow-bridge) running on your PC
 - Phone and PC on the same network (or connected via Tailscale)
 
 ## Installation
