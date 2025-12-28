@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "claude-shadow",
-      "source": ".",
+      "source": "./",
       "description": "Get push notifications on your phone when Claude Code needs input. Approve, deny, or reply from ShadowAI.",
       "version": "1.0.0"
     }
