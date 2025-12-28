@@ -17,14 +17,20 @@ Get push notifications on your phone when Claude Code needs your input. Approve,
 
 ## Installation
 
-### Option 1: Claude Code Plugin Marketplace
-```bash
-claude /plugin install claude-shadow
+### Option 1: Install from Marketplace (Recommended)
+1. Add the ShadowAI plugin marketplace:
+```
+/plugin marketplace add alrightryanx/claude-shadow
 ```
 
-### Option 2: Manual Installation
-1. Clone this repository
 2. Install the plugin:
+```
+/plugin install claude-shadow@shadowai-plugins
+```
+
+### Option 2: Install from Local Directory
+1. Clone this repository
+2. Run Claude Code with the plugin directory:
 ```bash
 claude --plugin-dir /path/to/claude-shadow
 ```
