@@ -1,0 +1,22 @@
+{
+  "name": "claude-shadow",
+  "version": "1.0.0",
+  "description": "Get push notifications on your phone when Claude Code needs input. Approve, deny, or reply from ShadowAI.",
+  "author": {
+    "name": "ShadowAI",
+    "email": "support@shadowai.app"
+  },
+  "homepage": "https://RyanCartwright.com/ShadowAI",
+  "repository": "https://github.com/alrightryanx/claude-shadow",
+  "license": "MIT",
+  "keywords": [
+    "notifications",
+    "mobile",
+    "companion",
+    "shadowai",
+    "android",
+    "remote",
+    "claude-code"
+  ],
+  "hooks": "./hooks/hooks.json"
+}
