@@ -46,7 +46,16 @@ $response = Send-ToBridge -Message $message -TimeoutSeconds 300
 
 if (-not $response) {
     # Bridge not available or timeout - let Claude Code handle normally
-    # Return empty output with exit 0 to allow normal flow
+    # Send dismiss message to clear notification on phone (user will approve on PC)
+    $dismissMessage = @{
+        type = "approval_dismiss"
+        sessionId = $sessionId
+        payload = @{
+            approvalId = $approvalId
+            reason = "timeout"
+        }
+    }
+    $null = Send-ToBridge -Message $dismissMessage -TimeoutSeconds 2
     exit 0
 }
 
@@ -83,7 +92,16 @@ if ($response.type -eq "approval_response") {
         exit 0
     }
 } elseif ($response.type -eq "timeout") {
-    # Timeout from bridge - let normal flow continue
+    # Timeout from bridge - send dismiss and let normal flow continue
+    $dismissMessage = @{
+        type = "approval_dismiss"
+        sessionId = $sessionId
+        payload = @{
+            approvalId = $approvalId
+            reason = "timeout"
+        }
+    }
+    $null = Send-ToBridge -Message $dismissMessage -TimeoutSeconds 2
     exit 0
 } else {
     # Unknown response - let normal flow continue
