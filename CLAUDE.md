@@ -110,6 +110,14 @@ C:\android\platform-tools\adb.exe install shadow-android/app/build/outputs/apk/r
 
 **Commit frequently to maintain backups and track changes.**
 
+### Self-Improvement (MANDATORY)
+When you make a mistake and find the correct solution, IMMEDIATELY update rules and CLAUDE.md files to encode the lesson. Examples:
+- Wrong bash command → document the working command
+- Forgot a step → add it to the checklist
+- User corrects you → add that correction as a rule
+
+This ensures you don't repeat the same mistakes across sessions.
+
 ### Timing Rules
 - **Immediately after changes (MANDATORY)**: Commit AND PUSH as soon as a change is complete - do NOT wait for user prompts or batch commits
 - **Session Start**: Check for uncommitted changes and commit if valid
