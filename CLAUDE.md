@@ -178,6 +178,16 @@ Each app ID has separate SSH keys. Run Quick Connect with ShadowBridge when swit
 
 - ADB: `C:\android\platform-tools\adb.exe`
 
+## Web Server Auto-Restart (MANDATORY)
+
+After making changes to shadow-bridge web files (templates, routes, static), ALWAYS restart the web server so changes are visible:
+
+```bash
+pkill -f "shadow_bridge_gui.py --web-server" 2>/dev/null; cd /c/shadow/shadow-bridge && python shadow_bridge_gui.py --web-server &
+```
+
+Dashboard URL: http://localhost:6767
+
 ## Architecture Notes
 
 - **Android**: MVVM pattern with ViewModels and Room database
