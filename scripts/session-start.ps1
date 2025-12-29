@@ -26,7 +26,7 @@ $message = @{
     type = "session_start"
     id = "msg_$([guid]::NewGuid().ToString('N').Substring(0,8))"
     sessionId = $sessionId
-    deviceId = $env:COMPUTERNAME
+    # deviceId omitted - bridge will send to any connected device
     timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
     payload = @{
         hostname = $env:COMPUTERNAME
