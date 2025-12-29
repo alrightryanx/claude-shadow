@@ -90,12 +90,37 @@ function Send-ToBridge {
 }
 
 function Read-HookInput {
-    # Read JSON from stdin
-    $inputJson = $input | Out-String
-    if ([string]::IsNullOrWhiteSpace($inputJson)) {
+    # Read JSON from stdin - when launched via "powershell -File"
+    # Debug log path
+    $debugLog = "$env:USERPROFILE\.claude-shadow-debug.log"
+    $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+    try {
+        # Method 1: Try reading via .NET Console.In
+        $inputJson = ""
+        $reader = [Console]::In
+        if ($reader) {
+            $inputJson = $reader.ReadToEnd()
+        }
+
+        "[$ts] Read-HookInput: Got $($inputJson.Length) chars via Console.In" | Add-Content $debugLog
+
+        if ([string]::IsNullOrWhiteSpace($inputJson)) {
+            "[$ts] Read-HookInput: Input was empty" | Add-Content $debugLog
+            return $null
+        }
+
+        # Show first 200 chars of input for debugging
+        $preview = if ($inputJson.Length -gt 200) { $inputJson.Substring(0, 200) + "..." } else { $inputJson }
+        "[$ts] Read-HookInput: Input preview: $preview" | Add-Content $debugLog
+
+        $parsed = $inputJson | ConvertFrom-Json
+        "[$ts] Read-HookInput: Parsed successfully, type=$($parsed.GetType().Name)" | Add-Content $debugLog
+        return $parsed
+    } catch {
+        "[$ts] Read-HookInput: Error - $_" | Add-Content $debugLog
         return $null
     }
-    return $inputJson | ConvertFrom-Json
 }
 
 function Write-HookOutput {
