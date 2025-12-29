@@ -15,12 +15,37 @@ function Get-CompanionConfig {
     }
 }
 
+function Send-LengthPrefixedMessage {
+    param($writer, $message)
+    $jsonString = $message | ConvertTo-Json -Depth 10 -Compress
+    $jsonBytes = [System.Text.Encoding]::UTF8.GetBytes($jsonString)
+    $lengthBytes = [BitConverter]::GetBytes([int32]$jsonBytes.Length)
+    if ([BitConverter]::IsLittleEndian) { [Array]::Reverse($lengthBytes) }
+    $writer.Write($lengthBytes)
+    $writer.Write($jsonBytes)
+    $writer.Flush()
+}
+
+function Read-LengthPrefixedMessage {
+    param($reader)
+    $responseLengthBytes = $reader.ReadBytes(4)
+    if ($responseLengthBytes.Length -lt 4) { return $null }
+    if ([BitConverter]::IsLittleEndian) { [Array]::Reverse($responseLengthBytes) }
+    $responseLength = [BitConverter]::ToInt32($responseLengthBytes, 0)
+    if ($responseLength -le 0 -or $responseLength -gt 1000000) { return $null }
+    $responseBytes = $reader.ReadBytes($responseLength)
+    return [System.Text.Encoding]::UTF8.GetString($responseBytes) | ConvertFrom-Json
+}
+
 function Send-ToBridge {
     param(
         [Parameter(Mandatory=$true)]
         [hashtable]$Message,
         [int]$TimeoutSeconds = 300
     )
+
+    $debugLog = "$env:USERPROFILE\.claude-shadow-debug.log"
+    $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
     $config = Get-CompanionConfig
     if (-not $config.enabled) {
@@ -40,7 +65,7 @@ function Send-ToBridge {
         # Try to connect
         $connectTask = $tcpClient.ConnectAsync($config.bridgeHost, $config.bridgePort)
         if (-not $connectTask.Wait(5000)) {
-            Write-Error "Connection to ShadowBridge timed out"
+            "[$ts] Send-ToBridge: Connection timed out" | Add-Content $debugLog
             return $null
         }
 
@@ -48,38 +73,31 @@ function Send-ToBridge {
         $reader = New-Object System.IO.BinaryReader($stream)
         $writer = New-Object System.IO.BinaryWriter($stream)
 
-        # Convert message to JSON bytes
-        $jsonString = $Message | ConvertTo-Json -Depth 10 -Compress
-        $jsonBytes = [System.Text.Encoding]::UTF8.GetBytes($jsonString)
+        # Step 1: Send handshake (no deviceId = plugin client)
+        $handshake = @{ type = "handshake" }
+        "[$ts] Send-ToBridge: Sending handshake" | Add-Content $debugLog
+        Send-LengthPrefixedMessage -writer $writer -message $handshake
 
-        # Send length-prefixed message (big-endian int32 + bytes)
-        $lengthBytes = [BitConverter]::GetBytes([int32]$jsonBytes.Length)
-        if ([BitConverter]::IsLittleEndian) {
-            [Array]::Reverse($lengthBytes)
-        }
-        $writer.Write($lengthBytes)
-        $writer.Write($jsonBytes)
-        $writer.Flush()
-
-        # Read response (length-prefixed)
-        $responseLengthBytes = $reader.ReadBytes(4)
-        if ([BitConverter]::IsLittleEndian) {
-            [Array]::Reverse($responseLengthBytes)
-        }
-        $responseLength = [BitConverter]::ToInt32($responseLengthBytes, 0)
-
-        if ($responseLength -le 0 -or $responseLength -gt 1000000) {
-            Write-Error "Invalid response length: $responseLength"
+        # Wait for handshake ack
+        $ack = Read-LengthPrefixedMessage -reader $reader
+        if (-not $ack -or $ack.type -ne "handshake_ack") {
+            "[$ts] Send-ToBridge: Handshake failed, got: $($ack | ConvertTo-Json -Compress)" | Add-Content $debugLog
             return $null
         }
+        "[$ts] Send-ToBridge: Handshake successful" | Add-Content $debugLog
 
-        $responseBytes = $reader.ReadBytes($responseLength)
-        $responseJson = [System.Text.Encoding]::UTF8.GetString($responseBytes)
+        # Step 2: Send the actual message
+        "[$ts] Send-ToBridge: Sending message type=$($Message.type)" | Add-Content $debugLog
+        Send-LengthPrefixedMessage -writer $writer -message $Message
 
-        return $responseJson | ConvertFrom-Json
+        # Step 3: Wait for response (could be immediate ack or approval_response from device)
+        $response = Read-LengthPrefixedMessage -reader $reader
+        "[$ts] Send-ToBridge: Got response type=$($response.type)" | Add-Content $debugLog
+
+        return $response
 
     } catch {
-        Write-Error "Bridge communication error: $_"
+        "[$ts] Send-ToBridge: Error - $_" | Add-Content $debugLog
         return $null
     } finally {
         if ($reader) { $reader.Dispose() }
