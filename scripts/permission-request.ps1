@@ -36,7 +36,9 @@ $message = @{
         toolUseId = $toolUseId
         prompt = $prompt
         promptType = "PERMISSION"
-        options = @("Approve", "Deny")
+        # Always include Reply option so user can respond with context or queue messages
+        options = @("Approve", "Deny", "Reply")
+        allowReply = $true
         cwd = $cwd
     }
 }
