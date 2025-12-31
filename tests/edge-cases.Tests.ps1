@@ -304,9 +304,9 @@ Describe "Error Recovery" {
 
     Context "Fallback values" {
         It "Uses default host when not configured" {
-            $host = $null
+            $configuredHost = $null
             $defaultHost = "127.0.0.1"
-            $effectiveHost = if ($host) { $host } else { $defaultHost }
+            $effectiveHost = if ($configuredHost) { $configuredHost } else { $defaultHost }
             $effectiveHost | Should Be "127.0.0.1"
         }
 
@@ -347,10 +347,11 @@ Describe "Config File Handling" {
 
         It "Handles empty config file" {
             $tempFile = [System.IO.Path]::GetTempFileName()
-            "" | Set-Content $tempFile
+            [System.IO.File]::WriteAllText($tempFile, "")
 
-            $content = Get-Content $tempFile -Raw
-            $content | Should Be ""
+            $content = Get-Content $tempFile -Raw -ErrorAction SilentlyContinue
+            # Empty file returns null or empty string
+            ($content -eq $null -or $content -eq "") | Should Be $true
 
             Remove-Item $tempFile
         }
@@ -377,14 +378,7 @@ Describe "Config File Handling" {
 Describe "Concurrent Operations" {
     Context "Thread safety concepts" {
         It "Multiple message IDs are unique" {
-            $ids = [System.Collections.Concurrent.ConcurrentBag[string]]::new()
-
-            1..100 | ForEach-Object -Parallel {
-                $id = "msg_$([guid]::NewGuid().ToString('N').Substring(0,8))"
-                ($using:ids).Add($id)
-            } -ThrottleLimit 10 -ErrorAction SilentlyContinue
-
-            # Even without parallel support, sequential should work
+            # Test that GUID-based IDs are unique even when generated rapidly
             $ids = @()
             for ($i = 0; $i -lt 100; $i++) {
                 $ids += "msg_$([guid]::NewGuid().ToString('N').Substring(0,8))"
