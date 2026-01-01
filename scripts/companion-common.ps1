@@ -155,33 +155,114 @@ function Get-FriendlyToolDescription {
         [object]$ToolInput
     )
 
+    # Get short filename from full path
+    function Get-ShortPath {
+        param([string]$Path)
+        if (-not $Path) { return "" }
+        $parts = $Path -split '[/\\]' | Where-Object { $_ -ne '' }
+        if ($parts.Count -ge 2) {
+            return ".../$($parts[-2])/$($parts[-1])"
+        } elseif ($parts.Count -eq 1) {
+            return $parts[-1]
+        }
+        return $Path
+    }
+
     switch ($ToolName) {
         "Bash" {
             $cmd = $ToolInput.command
-            if ($cmd.Length -gt 100) {
-                $cmd = $cmd.Substring(0, 100) + "..."
+            # Parse command to show meaningful summary
+            if ($cmd -match "^(git\s+\w+)") {
+                $gitCmd = $matches[1]
+                if ($cmd.Length -gt 80) { $cmd = $cmd.Substring(0, 80) + "..." }
+                return "$gitCmd`: $cmd"
+            } elseif ($cmd -match "^(npm|yarn|pnpm)\s+(\w+)") {
+                return "$($matches[1]) $($matches[2])"
+            } elseif ($cmd -match "^(gradlew?|./gradlew)\s+(\w+)") {
+                return "Gradle: $($matches[2])"
+            } elseif ($cmd -match "^(python|python3|py)\s+(.+)") {
+                $script = $matches[2]
+                if ($script.Length -gt 60) { $script = $script.Substring(0, 60) + "..." }
+                return "Python: $script"
+            } elseif ($cmd -match "^(adb)\s+(.+)") {
+                return "ADB: $($matches[2].Substring(0, [Math]::Min(60, $matches[2].Length)))"
+            } else {
+                if ($cmd.Length -gt 80) { $cmd = $cmd.Substring(0, 80) + "..." }
+                return "Run: $cmd"
             }
-            return "Run command: $cmd"
         }
         "Write" {
-            return "Create/overwrite: $($ToolInput.file_path)"
+            $shortPath = Get-ShortPath $ToolInput.file_path
+            return "Create file: $shortPath"
         }
         "Edit" {
-            return "Edit file: $($ToolInput.file_path)"
+            $shortPath = Get-ShortPath $ToolInput.file_path
+            $changePreview = ""
+            if ($ToolInput.old_string) {
+                $oldLen = $ToolInput.old_string.Length
+                $newLen = if ($ToolInput.new_string) { $ToolInput.new_string.Length } else { 0 }
+                if ($newLen -gt $oldLen) {
+                    $changePreview = " (+$($newLen - $oldLen) chars)"
+                } elseif ($oldLen -gt $newLen) {
+                    $changePreview = " (-$($oldLen - $newLen) chars)"
+                }
+            }
+            return "Edit: $shortPath$changePreview"
         }
         "Read" {
-            return "Read file: $($ToolInput.file_path)"
+            $shortPath = Get-ShortPath $ToolInput.file_path
+            return "Read: $shortPath"
+        }
+        "Glob" {
+            return "Find files: $($ToolInput.pattern)"
+        }
+        "Grep" {
+            $pattern = $ToolInput.pattern
+            if ($pattern.Length -gt 40) { $pattern = $pattern.Substring(0, 40) + "..." }
+            return "Search code: $pattern"
         }
         "WebFetch" {
-            return "Fetch URL: $($ToolInput.url)"
+            $url = $ToolInput.url
+            # Extract domain for cleaner display
+            if ($url -match "https?://([^/]+)") {
+                $domain = $matches[1]
+                return "Fetch: $domain"
+            }
+            return "Fetch URL"
         }
         "WebSearch" {
-            return "Search web: $($ToolInput.query)"
+            $query = $ToolInput.query
+            if ($query.Length -gt 50) { $query = $query.Substring(0, 50) + "..." }
+            return "Search: $query"
+        }
+        "Task" {
+            $desc = $ToolInput.description
+            if (-not $desc) { $desc = "Run subtask" }
+            return "Agent: $desc"
+        }
+        "TodoWrite" {
+            $count = if ($ToolInput.todos) { $ToolInput.todos.Count } else { 0 }
+            return "Update todos ($count items)"
+        }
+        "AskUserQuestion" {
+            $questions = $ToolInput.questions
+            if ($questions -and $questions.Count -gt 0) {
+                $q = $questions[0].question
+                if ($q.Length -gt 60) { $q = $q.Substring(0, 60) + "..." }
+                return "Question: $q"
+            }
+            return "Asking question"
+        }
+        "LSP" {
+            return "Code nav: $($ToolInput.operation)"
+        }
+        "NotebookEdit" {
+            return "Edit notebook"
         }
         default {
-            $inputStr = $ToolInput | ConvertTo-Json -Compress
-            if ($inputStr.Length -gt 100) {
-                $inputStr = $inputStr.Substring(0, 100) + "..."
+            $inputStr = $ToolInput | ConvertTo-Json -Compress -ErrorAction SilentlyContinue
+            if ($inputStr -and $inputStr.Length -gt 80) {
+                $inputStr = $inputStr.Substring(0, 80) + "..."
             }
             return "${ToolName}: $inputStr"
         }

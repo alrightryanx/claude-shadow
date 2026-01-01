@@ -5,6 +5,7 @@
 
 # Debug logging
 $logFile = "$env:USERPROFILE\.claude-shadow-debug.log"
+$contextCacheFile = "$env:USERPROFILE\.claude-shadow-context.json"
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 "[$timestamp] User-prompt hook invoked" | Add-Content $logFile
 
@@ -20,6 +21,16 @@ $prompt = $hookInput.prompt
 $cwd = $hookInput.cwd
 
 "[$timestamp] User prompt: sessionId=$sessionId, prompt=$($prompt.Substring(0, [Math]::Min(50, $prompt.Length)))..." | Add-Content $logFile
+
+# Cache the prompt context for notification enrichment
+$promptPreview = if ($prompt.Length -gt 100) { $prompt.Substring(0, 100) + "..." } else { $prompt }
+$contextCache = @{
+    timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    sessionId = $sessionId
+    lastPromptPreview = $promptPreview
+    cwd = $cwd
+}
+$contextCache | ConvertTo-Json -Compress | Set-Content $contextCacheFile -Force
 
 # Build session message for user prompt
 $message = @{

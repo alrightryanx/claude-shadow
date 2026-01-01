@@ -3,6 +3,11 @@
 
 . "$PSScriptRoot\companion-common.ps1"
 
+# Debug logging
+$logFile = "$env:USERPROFILE\.claude-shadow-debug.log"
+$contextCacheFile = "$env:USERPROFILE\.claude-shadow-context.json"
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
 # Read hook input from stdin
 $hookInput = Read-HookInput
 if (-not $hookInput) {
@@ -15,6 +20,21 @@ $toolName = $hookInput.tool_name
 $toolInput = $hookInput.tool_input
 $toolUseId = $hookInput.tool_use_id
 $cwd = $hookInput.cwd
+
+# Update context cache with current tool (for notification enrichment)
+try {
+    $existingContext = @{}
+    if (Test-Path $contextCacheFile) {
+        $existingContext = Get-Content $contextCacheFile -Raw | ConvertFrom-Json -AsHashtable
+    }
+    $existingContext.timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $existingContext.lastTool = $toolName
+    $existingContext.sessionId = $sessionId
+    $existingContext.cwd = $cwd
+    $existingContext | ConvertTo-Json -Compress | Set-Content $contextCacheFile -Force
+} catch {
+    "[$timestamp] Error updating context cache: $_" | Add-Content $logFile
+}
 
 # Generate approval ID
 $approvalId = "approval_$(Get-Date -Format 'yyyyMMddHHmmss')_$([guid]::NewGuid().ToString('N').Substring(0,8))"
