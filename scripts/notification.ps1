@@ -20,13 +20,50 @@ $notificationId = "notif_$(Get-Date -Format 'yyyyMMddHHmmss')_$([guid]::NewGuid(
 $summary = $notificationMessage
 $displayMessage = $notificationMessage
 
-# Enhance vague notification messages with better context
-if ($notificationMessage -match "(?i)waiting.*input|user.*input|awaiting.*response") {
-    $summary = "Claude Code needs your input"
-    $displayMessage = "Claude Code is waiting for your response. Tap Reply to respond or queue a message."
-} elseif ($notificationMessage -match "(?i)bash|command|shell|terminal") {
-    $summary = "Command notification"
-    # Keep the original message but ensure it's actionable
+# Enhance vague notification messages with better context based on patterns
+if ($notificationMessage -match "(?i)waiting.*input|user.*input|awaiting.*response|waiting on input") {
+    # Check notification type for more context
+    $contextHint = switch -Regex ($notificationType) {
+        "(?i)question" { "Claude has a question for you" }
+        "(?i)confirm" { "Claude needs confirmation to proceed" }
+        "(?i)choice|select" { "Claude needs you to make a choice" }
+        "(?i)error|fail" { "Claude encountered an issue and needs guidance" }
+        default { "Claude Code paused for your input" }
+    }
+    $summary = $contextHint
+    $displayMessage = "$contextHint. Reply with your answer or tap Reply to respond via voice/text."
+} elseif ($notificationMessage -match "(?i)error|exception|fail|crash") {
+    $summary = "Error notification"
+    $displayMessage = "An error occurred: $notificationMessage"
+} elseif ($notificationMessage -match "(?i)complet|finish|done|success") {
+    $summary = "Task completed"
+    $displayMessage = $notificationMessage
+} elseif ($notificationMessage -match "(?i)start|begin|running") {
+    $summary = "Task started"
+    $displayMessage = $notificationMessage
+} elseif ($notificationMessage -match "(?i)bash|command|shell|terminal|exec") {
+    # Extract command if present in message
+    $cmdMatch = [regex]::Match($notificationMessage, "(?:command|running|executing)[:\s]*(.+)", "IgnoreCase")
+    if ($cmdMatch.Success) {
+        $cmd = $cmdMatch.Groups[1].Value.Trim()
+        if ($cmd.Length -gt 50) { $cmd = $cmd.Substring(0, 50) + "..." }
+        $summary = "Running: $cmd"
+    } else {
+        $summary = "Command notification"
+    }
+    $displayMessage = $notificationMessage
+} elseif ($notificationMessage -match "(?i)file|read|write|edit|save|creat") {
+    $summary = "File operation"
+    $displayMessage = $notificationMessage
+} elseif ($notificationMessage -match "(?i)build|compil|gradle|npm|cargo|make") {
+    $summary = "Build notification"
+    $displayMessage = $notificationMessage
+} elseif ($notificationMessage -match "(?i)test|spec|assert") {
+    $summary = "Test notification"
+    $displayMessage = $notificationMessage
+} elseif ($notificationMessage -match "(?i)git|commit|push|pull|merge|branch") {
+    $summary = "Git operation"
+    $displayMessage = $notificationMessage
 }
 
 # Build notification message with reply capability
