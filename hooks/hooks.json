@@ -1,6 +1,17 @@
 {
   "description": "Claude Code Companion - ShadowAI mobile notifications for Claude Code",
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/scripts/user-prompt.ps1\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PermissionRequest": [
       {
         "matcher": "*",
@@ -14,6 +25,15 @@
       }
     ],
     "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/scripts/stop-response.ps1\"",
+            "timeout": 10
+          }
+        ]
+      },
       {
         "hooks": [
           {
