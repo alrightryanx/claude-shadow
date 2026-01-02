@@ -82,7 +82,7 @@ elseif ($notificationMessage -match "(?i)waiting.*input|user.*input|awaiting.*re
             $contextParts += "Last action: $($recentContext.lastTool)"
         }
         if ($recentContext.lastPromptPreview) {
-            $contextParts += "Working on: $($recentContext.lastPromptPreview)"
+            $contextParts += $recentContext.lastPromptPreview
         }
     }
 
