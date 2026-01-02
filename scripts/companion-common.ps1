@@ -41,7 +41,7 @@ function Send-ToBridge {
     param(
         [Parameter(Mandatory=$true)]
         [hashtable]$Message,
-        [int]$TimeoutSeconds = 300
+        [int]$TimeoutSeconds = 60  # Reduced from 300s for better UX
     )
 
     $debugLog = "$env:USERPROFILE\.claude-shadow-debug.log"

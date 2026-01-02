@@ -19,7 +19,7 @@
           {
             "type": "command",
             "command": "powershell -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/scripts/permission-request.ps1\"",
-            "timeout": 300
+            "timeout": 60
           }
         ]
       }

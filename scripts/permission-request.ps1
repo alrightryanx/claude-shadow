@@ -63,8 +63,8 @@ $message = @{
     }
 }
 
-# Send to bridge and wait for response (5 minute timeout)
-$response = Send-ToBridge -Message $message -TimeoutSeconds 300
+# Send to bridge and wait for response (60 second timeout - reduced from 5 min for better UX)
+$response = Send-ToBridge -Message $message -TimeoutSeconds 60
 
 if (-not $response) {
     # Bridge not available or timeout - let Claude Code handle normally
