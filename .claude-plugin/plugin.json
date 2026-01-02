@@ -1,6 +1,6 @@
 {
   "name": "claude-shadow",
-  "version": "1.006",
+  "version": "1.007",
   "description": "Get push notifications on your phone when Claude Code needs input. Approve, deny, or reply from ShadowAI.",
   "author": {
     "name": "ShadowAI",
