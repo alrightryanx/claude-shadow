@@ -114,9 +114,9 @@ elseif ($notificationMessage -match "(?i)waiting.*input|user.*input|awaiting.*re
 
     if ($contextParts.Count -gt 0) {
         $contextInfo = $contextParts -join " | "
-        $displayMessage = "$actionHint`n`n$contextInfo`n`nCheck Claude Code to respond, or tap Reply."
+        $displayMessage = "$actionHint`n`n$contextInfo"
     } else {
-        $displayMessage = "$actionHint$projectContext.`n`nOpen Claude Code to see the question and respond."
+        $displayMessage = "$actionHint$projectContext."
     }
 }
 # Priority 3: Detect specific patterns in the message
