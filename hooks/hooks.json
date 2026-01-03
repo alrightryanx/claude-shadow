@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "powershell -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/scripts/user-prompt.ps1\"",
-            "timeout": 5
+            "timeout": 10
           }
         ]
       }
