@@ -76,7 +76,7 @@ Describe "Permission Request - Message Construction" {
     }
 
     It "Has friendly prompt" {
-        $message.payload.prompt | Should Be "Create/overwrite: C:\test\file.txt"
+        $message.payload.prompt | Should Be "Create file: .../test/file.txt"
     }
 }
 

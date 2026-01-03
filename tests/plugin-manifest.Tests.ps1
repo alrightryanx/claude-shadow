@@ -232,32 +232,32 @@ Describe "Tool Description Formatting" {
 
         It "Formats Bash command" {
             $desc = Get-FriendlyToolDescription -ToolName "Bash" -ToolInput @{ command = "ls -la" }
-            $desc | Should Be "Run command: ls -la"
+            $desc | Should Be "Run: ls -la"
         }
 
         It "Formats Write path" {
             $desc = Get-FriendlyToolDescription -ToolName "Write" -ToolInput @{ file_path = "/test/file.txt" }
-            $desc | Should Be "Create/overwrite: /test/file.txt"
+            $desc | Should Be "Create file: .../test/file.txt"
         }
 
         It "Formats Edit path" {
             $desc = Get-FriendlyToolDescription -ToolName "Edit" -ToolInput @{ file_path = "/test/code.py" }
-            $desc | Should Be "Edit file: /test/code.py"
+            $desc | Should Be "Edit: .../test/code.py"
         }
 
         It "Formats Read path" {
             $desc = Get-FriendlyToolDescription -ToolName "Read" -ToolInput @{ file_path = "/data/config.json" }
-            $desc | Should Be "Read file: /data/config.json"
+            $desc | Should Be "Read: .../data/config.json"
         }
 
         It "Formats WebFetch URL" {
             $desc = Get-FriendlyToolDescription -ToolName "WebFetch" -ToolInput @{ url = "https://api.example.com" }
-            $desc | Should Be "Fetch URL: https://api.example.com"
+            $desc | Should Be "Fetch: api.example.com"
         }
 
         It "Formats WebSearch query" {
             $desc = Get-FriendlyToolDescription -ToolName "WebSearch" -ToolInput @{ query = "PowerShell testing" }
-            $desc | Should Be "Search web: PowerShell testing"
+            $desc | Should Be "Search: PowerShell testing"
         }
 
         It "Handles unknown tool" {

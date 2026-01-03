@@ -68,48 +68,48 @@ Describe "Get-FriendlyToolDescription" {
     Context "Bash tool" {
         It "Describes short commands" {
             $desc = Get-FriendlyToolDescription -ToolName "Bash" -ToolInput @{ command = "ls -la" }
-            $desc | Should Be "Run command: ls -la"
+            $desc | Should Be "Run: ls -la"
         }
 
         It "Truncates long commands" {
             $longCommand = "a" * 150
             $desc = Get-FriendlyToolDescription -ToolName "Bash" -ToolInput @{ command = $longCommand }
-            $desc | Should Match "^Run command: a{100}\.\.\.$"
+            $desc | Should Match "^Run: a{80}\.\.\.$"
         }
     }
 
     Context "Write tool" {
         It "Shows file path" {
             $desc = Get-FriendlyToolDescription -ToolName "Write" -ToolInput @{ file_path = "C:\test\file.txt" }
-            $desc | Should Be "Create/overwrite: C:\test\file.txt"
+            $desc | Should Be "Create file: .../test/file.txt"
         }
     }
 
     Context "Edit tool" {
         It "Shows file path" {
             $desc = Get-FriendlyToolDescription -ToolName "Edit" -ToolInput @{ file_path = "C:\test\file.kt" }
-            $desc | Should Be "Edit file: C:\test\file.kt"
+            $desc | Should Be "Edit: .../test/file.kt"
         }
     }
 
     Context "Read tool" {
         It "Shows file path" {
             $desc = Get-FriendlyToolDescription -ToolName "Read" -ToolInput @{ file_path = "/home/user/code.py" }
-            $desc | Should Be "Read file: /home/user/code.py"
+            $desc | Should Be "Read: .../user/code.py"
         }
     }
 
     Context "WebFetch tool" {
         It "Shows URL" {
             $desc = Get-FriendlyToolDescription -ToolName "WebFetch" -ToolInput @{ url = "https://example.com/api" }
-            $desc | Should Be "Fetch URL: https://example.com/api"
+            $desc | Should Be "Fetch: example.com"
         }
     }
 
     Context "WebSearch tool" {
         It "Shows search query" {
             $desc = Get-FriendlyToolDescription -ToolName "WebSearch" -ToolInput @{ query = "Kotlin coroutines" }
-            $desc | Should Be "Search web: Kotlin coroutines"
+            $desc | Should Be "Search: Kotlin coroutines"
         }
     }
 
